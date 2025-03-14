@@ -1,0 +1,145 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #f4f7fa;
+    color: #333;
+}
+
+.navbar {
+    background: linear-gradient(135deg, #1f55aa, #f0f2f5);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.logo-container .logo {
+    font-size: 28px;
+    font-weight: 700;
+    color: #7b0b47;
+    letter-spacing: 1px;
+    transition: transform 0.3s ease;
+}
+
+.logo-container .logo:hover {
+    transform: scale(1.05);
+}
+
+.menu-container .menu-list {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+}
+
+.menu-list-item {
+    font-size: 16px;
+    font-weight: 500;
+    color: #771111;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.menu-list-item.active,
+.menu-list-item:hover {
+    background: #830411;
+    color: #fff;
+}
+
+.profile-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ff4b5c;
+}
+
+.profile-text-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.profile-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.profile-text-container:hover .profile-text {
+    color: #ff4b5c;
+}
+
+.toggle {
+    width: 50px;
+    height: 24px;
+    background: #ddd;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5px;
+    transition: background 0.3s ease;
+}
+
+.toggle-icon {
+    font-size: 16px;
+    color: #888;
+}
+
+.toggle-ball {
+    width: 20px;
+    height: 20px;
+    background: #ff4b5c;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s ease;
+}
+
+body.dark {
+    background: #1a1a1a;
+    color: #f0f0f0;
+}
+
+body.dark .navbar {
+    background: linear-gradient(135deg, #2c2c2c, #1f1f1f);
+}
+
+body.dark .menu-list-item {
+    color: #ccc;
+}
+
+body.dark .toggle {
+    background: #555;
+}
+
+body.dark .toggle-ball {
+    transform: translateX(26px);
+}
