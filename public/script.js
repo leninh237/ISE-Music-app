@@ -1,41 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
     const toggleButtons = document.querySelectorAll('.toggle');
-    const body = document.body;
-    const menuItems = document.querySelectorAll('.menu-list-item');
-    const profileContainer = document.querySelector('.profile-text-container');
     const loginForm = document.getElementById('login-form');
     const signupForm = document.getElementById('signup-form');
+    const audioPlayer = document.getElementById('audio-player');
+    const songList = document.getElementById('song-list');
+    const uploadAudio = document.getElementById('upload-audio');
+    const uploadBtn = document.getElementById('upload-btn');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    // Kiểm tra trạng thái đăng nhập khi vào index.html
+    if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+        if (localStorage.getItem('loggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        } else {
+            initMusicPlayer();
+        }
+    }
 
     // Toggle sáng/tối
     toggleButtons.forEach(toggle => {
         toggle.addEventListener('click', () => {
-            body.classList.toggle('dark');
-            localStorage.setItem('theme', body.classList.contains('dark') ? 'dark' : 'light');
+            document.body.classList.toggle('dark');
+            localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
         });
     });
 
     if (localStorage.getItem('theme') === 'dark') {
-        body.classList.add('dark');
+        document.body.classList.add('dark');
     }
 
-    // Menu
-    menuItems.forEach(item => {
-        item.addEventListener('click', () => {
-            menuItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-        });
-    });
-
-    // Profile
-    if (profileContainer) {
-        profileContainer.addEventListener('click', () => {
-            console.log('Profile clicked!');
-        });
-    }
-
-    // Signup form
+    // Xử lý đăng ký
     if (signupForm) {
-        signupForm.addEventListener('submit', (e) => {
+        signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = signupForm.querySelector('#username').value;
             const email = signupForm.querySelector('#email').value;
@@ -45,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return alert('Vui lòng điền đầy đủ thông tin!');
             }
 
-            // Kiểm tra định dạng
             if (username.length < 3 || username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username)) {
                 return alert('Tên đăng nhập phải dài 3-20 ký tự và chỉ chứa chữ cái hoặc số!');
             }
@@ -53,23 +50,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 return alert('Mật khẩu phải dài ít nhất 6 ký tự!');
             }
 
-            // Lấy danh sách users từ localStorage
-            let users = JSON.parse(localStorage.getItem('users')) || [];
-            if (users.some(user => user.username === username)) {
-                return alert('Tên đăng nhập đã tồn tại!');
-            }
+            try {
+                const response = await fetch('http://localhost:3000/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, email, password })
+                });
+                const result = await response.json();
 
-            // Thêm user mới
-            users.push({ username, email, password });
-            localStorage.setItem('users', JSON.stringify(users));
-            alert('Đăng ký thành công! Vui lòng đăng nhập.');
-            window.location.href = 'login.html';
+                if (response.ok) {
+                    alert(result.message);
+                    window.location.href = 'login.html';
+                } else {
+                    alert(result.error || 'Lỗi khi đăng ký!');
+                }
+            } catch (err) {
+                console.error('Lỗi khi gọi API đăng ký:', err);
+                alert('Không thể kết nối đến server. Vui lòng kiểm tra server!');
+            }
         });
     }
 
-    // Login form
+    // Xử lý đăng nhập
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = loginForm.querySelector('#username').value;
             const password = loginForm.querySelector('#password').value;
@@ -78,19 +84,103 @@ document.addEventListener('DOMContentLoaded', () => {
                 return alert('Vui lòng điền đầy đủ thông tin!');
             }
 
-            // Lấy danh sách users từ localStorage
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.username === username);
+            try {
+                const response = await fetch('http://localhost:3000/api/users');
+                if (!response.ok) {
+                    throw new Error('Không thể lấy danh sách người dùng!');
+                }
+                const users = await response.json();
 
-            if (!user) {
-                return alert('Tên đăng nhập không tồn tại!');
+                const user = users.find(u => u.username === username);
+
+                if (!user) {
+                    return alert('Tên đăng nhập không tồn tại!');
+                }
+                if (user.password !== password) {
+                    return alert('Mật khẩu không đúng!');
+                }
+
+                localStorage.setItem('loggedIn', 'true');
+                alert('Đăng nhập thành công!');
+                window.location.href = 'index.html';
+            } catch (err) {
+                console.error('Lỗi khi gọi API đăng nhập:', err);
+                alert('Không thể kết nối đến server. Vui lòng kiểm tra server!');
             }
-            if (user.password !== password) {
-                return alert('Mật khẩu không đúng!');
+        });
+    }
+
+    // Logic phát nhạc
+    function initMusicPlayer() {
+        if (!audioPlayer) return; // Chỉ chạy trên index.html
+
+        let songs = [];
+        let currentSongIndex = 0;
+
+        uploadBtn.addEventListener('click', async () => {
+            const files = uploadAudio.files;
+            if (files.length === 0) {
+                alert('Vui lòng chọn file để tải lên!');
+                return;
             }
 
-            alert('Đăng nhập thành công!');
-            window.location.href = 'index.html';
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('audio', file);
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    result.files.forEach((url, index) => {
+                        const fileName = files[index].name;
+                        songs.push({ name: fileName, url });
+                        const li = document.createElement('li');
+                        li.textContent = fileName;
+                        li.addEventListener('click', () => playSong(songs.indexOf({ name: fileName, url })));
+                        songList.appendChild(li);
+                    });
+                    uploadAudio.value = '';
+                    alert(result.message);
+                } else {
+                    alert(result.error);
+                }
+            } catch (err) {
+                console.error('Lỗi khi gọi API upload:', err);
+                alert('Không thể kết nối đến server. Vui lòng kiểm tra server!');
+            }
+        });
+
+        function playSong(index) {
+            if (index >= 0 && index < songs.length) {
+                currentSongIndex = index;
+                audioPlayer.src = songs[index].url;
+                audioPlayer.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            }
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                audioPlayer.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSongIndex > 0) playSong(currentSongIndex - 1);
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSongIndex < songs.length - 1) playSong(currentSongIndex + 1);
         });
     }
 });

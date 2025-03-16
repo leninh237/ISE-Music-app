@@ -11,7 +11,7 @@ body {
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Navbar styles (giữ nguyên từ trước) */
+/* Navbar styles */
 .navbar {
     background: linear-gradient(135deg, #ffffff, #f0f2f5);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -95,7 +95,7 @@ body {
     color: #ff4b5c;
 }
 
-/* Toggle styles (dùng chung cho cả navbar và login) */
+/* Toggle styles */
 .toggle {
     width: 50px;
     height: 24px;
@@ -221,54 +221,7 @@ body {
     margin: 20px auto 0;
 }
 
-/* Dark mode */
-body.dark {
-    background: #1a1a1a;
-    color: #f0f0f0;
-}
-
-body.dark .navbar {
-    background: linear-gradient(135deg, #2c2c2c, #1f1f1f);
-}
-
-body.dark .menu-list-item {
-    color: #ccc;
-}
-
-body.dark .toggle {
-    background: #555;
-}
-
-body.dark .toggle:hover {
-    background: #666;
-}
-
-body.dark .toggle-ball {
-    transform: translateX(26px);
-}
-
-body.dark .login-container {
-    background: linear-gradient(135deg, #2c2c2c, #1f1f1f);
-}
-
-body.dark .login-box {
-    background: #333;
-}
-
-body.dark .input-group label {
-    color: #ccc;
-}
-
-body.dark .input-group input {
-    background: #444;
-    border-color: #555;
-    color: #f0f0f0;
-}
-
-body.dark .signup-link {
-    color: #ccc;
-}
-
+/* Signup page styles */
 .signup-container {
     height: 100vh;
     display: flex;
@@ -331,11 +284,124 @@ body.dark .signup-link {
     margin: 20px auto 0;
 }
 
-/* Dark mode cho signup */
-body.dark .signup-container {
+/* Music page styles */
+.music-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+.music-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ff4b5c;
+    margin-bottom: 20px;
+}
+
+.upload-section {
+    margin-bottom: 20px;
+}
+
+.upload-btn {
+    padding: 10px 20px;
+    background: #ff4b5c;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.upload-btn:hover {
+    background: #e04352;
+}
+
+.song-list {
+    list-style: none;
+    margin-bottom: 20px;
+}
+
+.song-list li {
+    padding: 10px;
+    background: #fff;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.song-list li:hover {
+    background: #f0f0f0;
+}
+
+.player {
+    text-align: center;
+}
+
+.player-controls {
+    margin-top: 10px;
+}
+
+.player-controls button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #ff4b5c;
+    cursor: pointer;
+    margin: 0 10px;
+}
+
+/* Dark mode */
+body.dark {
+    background: #1a1a1a;
+    color: #f0f0f0;
+}
+
+body.dark .navbar {
     background: linear-gradient(135deg, #2c2c2c, #1f1f1f);
 }
 
-body.dark .signup-box {
+body.dark .menu-list-item {
+    color: #ccc;
+}
+
+body.dark .toggle {
+    background: #555;
+}
+
+body.dark .toggle:hover {
+    background: #666;
+}
+
+body.dark .toggle-ball {
+    transform: translateX(26px);
+}
+
+body.dark .login-container, body.dark .signup-container {
+    background: linear-gradient(135deg, #2c2c2c, #1f1f1f);
+}
+
+body.dark .login-box, body.dark .signup-box {
     background: #333;
+}
+
+body.dark .input-group label {
+    color: #ccc;
+}
+
+body.dark .input-group input {
+    background: #444;
+    border-color: #555;
+    color: #f0f0f0;
+}
+
+body.dark .signup-link, body.dark .login-link {
+    color: #ccc;
+}
+
+body.dark .song-list li {
+    background: #444;
+}
+
+body.dark .song-list li:hover {
+    background: #555;
 }

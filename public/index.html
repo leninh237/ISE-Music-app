@@ -37,6 +37,26 @@
             </div>
         </div>
     </div>
+
+    <div class="music-container">
+        <h2 class="music-title">Danh sách nhạc của bạn</h2>
+        <div class="upload-section">
+            <input type="file" id="upload-audio" accept=".mp3,.ogg,.wav" multiple>
+            <button id="upload-btn" class="upload-btn">Tải lên</button>
+        </div>
+        <div class="playlist">
+            <ul id="song-list" class="song-list"></ul>
+        </div>
+        <div class="player">
+            <audio id="audio-player" controls></audio>
+            <div class="player-controls">
+                <button id="prev-btn"><i class="fas fa-step-backward"></i></button>
+                <button id="play-pause-btn"><i class="fas fa-play"></i></button>
+                <button id="next-btn"><i class="fas fa-step-forward"></i></button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

@@ -1,77 +1,74 @@
 const express = require('express');
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
+const multer = require('multer');
+const cors = require('cors');
 const app = express();
 
+// Cấu hình multer để xử lý upload file
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+const upload = multer({ storage });
+
+// Đường dẫn đến file users.json
+const usersFilePath = path.join(__dirname, 'users.json');
+
+// Middleware
+app.use(cors()); // Cho phép CORS
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.static('public'));
 
-// đăng ký
-app.post('/signup', (req, res) => {
-    const { username, email, password } = req.body;
-    if (!username || !email || !password) {
-        return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin!' });
-    }
-
-    if (username.length < 3 || username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username)) {
-        return res.status(400).json({ message: 'Tên đăng nhập phải dài 3-20 ký tự và chỉ chứa chữ cái hoặc số!' });
-    }
-    if (password.length < 6) {
-        return res.status(400).json({ message: 'Mật khẩu phải dài ít nhất 6 ký tự!' });
-    }
-
-    let users = [];
+// API lấy danh sách users
+app.get('/api/users', async (req, res) => {
     try {
-        if (fs.existsSync('users.json')) {
-            users = JSON.parse(fs.readFileSync('users.json', 'utf8'));
-        }
-        if (users.some(user => user.username === username)) {
-            return res.status(400).json({ message: 'Tên đăng nhập đã tồn tại!' });
-        }
-
-        users.push({ username, email, password });
-        fs.writeFileSync('users.json', JSON.stringify(users, null, 2));
-        res.json({ message: 'Đăng ký thành công! Vui lòng đăng nhập.' });
-    } catch (error) {
-        console.error('Lỗi ghi file:', error);
-        res.status(500).json({ message: 'Lỗi server khi ghi dữ liệu, vui lòng thử lại!' });
+        const data = await fs.readFile(usersFilePath, 'utf8');
+        const users = JSON.parse(data);
+        res.json(users);
+    } catch (err) {
+        console.error('Lỗi khi đọc file users.json:', err);
+        res.status(500).json({ error: 'Không thể đọc file users.json' });
     }
 });
 
-// đăng nhập
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin!' });
-    }
-
+// API thêm user mới
+app.post('/api/users', async (req, res) => {
     try {
-        if (!fs.existsSync('users.json')) {
-            return res.status(500).json({ message: 'File dữ liệu người dùng không tồn tại!' });
+        const newUser = req.body;
+        const data = await fs.readFile(usersFilePath, 'utf8');
+        const users = JSON.parse(data);
+
+        // Kiểm tra xem username đã tồn tại chưa
+        if (users.some(user => user.username === newUser.username)) {
+            return res.status(400).json({ error: 'Tên đăng nhập đã tồn tại!' });
         }
 
-        const users = JSON.parse(fs.readFileSync('users.json', 'utf8'));
-        const user = users.find(u => u.username === username);
-
-        if (!user) {
-            return res.status(401).json({ message: 'Tên đăng nhập không tồn tại!' });
-        }
-        if (user.password !== password) {
-            return res.status(401).json({ message: 'Mật khẩu không đúng!' });
-        }
-
-        res.json({ message: 'Đăng nhập thành công!' });
-    } catch (error) {
-        console.error('Lỗi đọc file:', error);
-        res.status(500).json({ message: 'Lỗi server khi đọc dữ liệu, vui lòng thử lại!' });
+        users.push(newUser);
+        await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2));
+        res.status(201).json({ message: 'Đăng ký thành công!' });
+    } catch (err) {
+        console.error('Lỗi khi ghi file users.json:', err);
+        res.status(500).json({ error: 'Không thể ghi vào file users.json' });
     }
 });
 
-// Chuyển hướng đến signup.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'signup.html'));
+// API upload file nhạc
+app.post('/api/upload', upload.array('audio'), (req, res) => {
+    const files = req.files;
+    if (!files || files.length === 0) {
+        return res.status(400).json({ error: 'Không có file nào được tải lên!' });
+    }
+    const fileUrls = files.map(file => `/uploads/${file.filename}`);
+    res.json({ message: 'Tải lên thành công!', files: fileUrls });
 });
 
-app.listen(3000, () => {
-    console.log('Server chạy trên http://localhost:3000');
+// Khởi động server
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server chạy tại http://localhost:${PORT}`);
 });
